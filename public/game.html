@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Easy Ice Cream Cruise</title>  
+    <link rel="stylesheet" href="style.css">  
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      html,
+      body,
+      canvas {
+        width: 100%;
+        height: 100%;
+        background-color: gray;
+        margin: 0;
+        overflow: hidden; 
+        font-family: Arial, sans-serif;
+        color: var(--font-white);
+      }
+
+      .modal-content h2 {
+        color: var(--font-black);
+      }
+
+      .modal-content {
+        color: var(--font-black);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content button, a {
+        width: 40%;
+      }
+
+      #settings-menu {
+        display: none;
+      }
+
+      #multi-track-finish {
+        display: none;
+      }
+
+      #single-track-finish {
+        display: none;
+      }
+
+      #new_pb {
+        color: rgb(186, 0, 0);
+        display: none;
+        font-weight: bolder;
+        font-size: var(--font-size-4);
+      }
+
+      .text-border {
+        font-size: var(--font-size-1);
+        -webkit-text-stroke-width: 3px; 
+        -webkit-text-stroke-color: black;
+      }
+
+      #time {
+        width: 100vw;
+        position: absolute;
+        bottom: 0;
+        text-align: center;
+      }
+
+      #speed {
+        position: absolute;
+        bottom: 2vh;
+        right: 2vw;
+        
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #speed-units {
+        font-size: var(--font-size-2);
+        -webkit-text-stroke-width: 2px; 
+      }
+
+      #top-right {
+        font-size: var(--font-size-3);
+        -webkit-text-stroke-width: 2px; 
+        width: 100vw;
+        position: absolute;
+        top: 0;
+        text-align: right;
+      }
+
+      #instructions {
+        font-size: var(--font-size-3);
+        -webkit-text-stroke-width: 2px;
+        width: 100vw;
+        position: absolute;
+        top: 0;
+        text-align: left;
+      }
+
+      #countdown {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -5vh; /* negative half of the height to offset top: 50% */
+        margin-left: -5vw;
+        width: 10vw;
+        height: 10vh;
+        font-size: var(--font-size-1);
+        text-align: center;
+      }
+      
+
+      #settings-menu {
+        max-height: 500px; 
+        overflow-y: scroll; 
+        padding: 20px;
+      }
+      
+      .settings-section {
+          margin-bottom: 20px;
+      }
+      
+      .keybind {
+          margin: 10px 0;
+      }
+      
+      .keybind input[type="text"] {
+          width: 30px;
+          text-align: center;
+      } 
+
+      #volume-slider {
+        margin: 10px;
+      }    
+
+      
+      .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background-color: #f0f;
+        opacity: 0;
+        z-index: 99;
+      }
+      
+      @keyframes confetti-animation {
+        0% { transform: translateY(0) rotate(0deg); top: -10%; opacity: 1; }
+        100% { transform: translateY(500px) rotate(720deg); top: 100%; opacity: 0; }
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <div id="countdown" class="text-border"></div>
+
+    <div id="instructions" class="text-border">
+      <span id="movement-binds">WASD</span> to move
+      <br>
+      SPACE to brake
+      <br>
+      R to respawn
+      <br>
+      ESC to menu
+    </div>
+
+    <div id="top-right" class="text-border">
+      <div id="track-name"></div>
+      <div id="laps">Lap 1 / 1</div>
+    </div>
+
+    <div id="speed" class="text-border">
+      <div id="speed-number">0</div>
+      <div id="speed-units">mph</div>
+    </div>
+
+    <div id="time" class="text-border">0:00.00</div>
+
+    <script type="module">
+      import { domainName } from "../globalVars.js"
+      const redirectUrl = "http://" + domainName + ":3000";
+
+      if (sessionStorage.getItem("username") === null) {
+        // Redirect the user
+        window.location.href = redirectUrl;
+      }
+
+      for (let button of document.getElementsByClassName("home-button")){
+        //back to the menu when the home button is pressed
+        button.onclick = function(e){
+          window.location.href = redirectUrl + "/menu"
+        } 
+      }
+     
+    </script>
+
+
+    <script defer src="/javascript/esc.js"></script>
+    <script defer type="module" src="/javascript/game.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.js'></script>
+    <div id="modal" class="modal hidden">
+      <div class="modal-content" id="esc-menu">
+        <h2 class="title2">Easy Ice Cream Cruise</h2>
+        <img onclick="hideEscapeMenu()" class="close-menu" src="./res/close.png">
+        <br>
+        <button id="restart-button" class="submit-button" onclick="window.location.reload()">Restart</button>
+        <br>
+        <button onclick="goToSettingsMenu()" class="submit-button">Settings</button>
+        <br>
+        <button onclick="goHome()" class="submit-button home-button">Home</button>
+      </div>
+      <div class="modal-content" id="settings-menu">
+        <img onclick="goToEscMenu()" class="close-menu" src="./res/close.png">
+        <div class="settings-section">
+          <h1>Settings</h1>
+          <div class="keybind">
+              <label for="forward-key">Move Forward: </label>
+              <input type="text" id="forward-key" value="W" maxlength="1">
+          </div>
+          <div class="keybind">
+              <label for="backward-key">Move Backward: </label>
+              <input type="text" id="backward-key" value="S" maxlength="1">
+          </div>
+          <div class="keybind">
+            <label for="backward-key">Turn Left: </label>
+            <input type="text" id="left-key" value="A" maxlength="1">
+          </div>
+          <div class="keybind">
+            <label for="backward-key">Turn Right: </label>
+            <input type="text" id="right-key" value="D" maxlength="1">
+          </div>
+        </div>
+
+        <!-- Save and Cancel Buttons -->
+        <button onclick="saveSettings()" class="submit-button">Save</button>
+      </div>
+
+      <div class="modal-content" id="single-track-finish">
+        <img onclick="hideEscapeMenu()" class="close-menu" src="./res/close.png">
+        <h2 class="title2"><span id="track-finish-track-name"></span> Complete!</h2>
+        <h3 class="title3" id="track-finish-time">-:--.--</h3>
+        <h5 id="new_pb">NEW PERSONAL BEST!</h5>
+        <br>
+        <button id="restart-button" class="submit-button" onclick="window.location.reload()">Restart</button>
+        <br>
+        <button class="submit-button home-button">Home</button>
+      </div>
+      <div class="modal-content" id="multi-track-finish">
+        <img onclick="hideEscapeMenu()" class="close-menu" src="./res/close.png">
+        <h2 class="title2">Leaderboard</h2>
+        <div id="multi-track-leaderboard">
+          <!-- here's where we add usernames + final times -->
+        </div>
+        <br>
+        <button class="submit-button home-button">Home</button>
+      </div>
+    </div>
+
+  </body>
+</html>

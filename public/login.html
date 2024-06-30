@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Ice Cream Cruise | Log In</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+
+        .form-container {
+            width: 40vw;
+            min-height: 50vh;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 5% auto 0 auto;
+        }
+
+        input {
+            display: inline;
+            padding: 7%;
+            width: 110%;
+            background-color: var(--bg-purewhite);
+            border: 1px solid var(--bg-dark-grey);
+            border-radius: 4px;
+        }
+
+        form {
+            padding: 2%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #tip {
+            text-align: center;
+            font-size: var(--font-size-5);
+        }
+
+        #form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        #form-grid * {
+            margin: 5%;
+        }
+
+        #form-grid label {
+            grid-column: 0 / 1;
+            margin: auto 0;
+        }
+
+        button[type="submit"]{
+            width: 20vw;
+        }
+    </style>
+</head>
+<body>
+    <div id="error1" class="modal">
+        <div class="error-modal-content">
+            <img onclick="closeModal(1)" class="close-menu" src="./res/close.png">
+            <h3 class="title3">Incorrect username or password!</h3>
+        </div>
+    </div>
+    <div id="error2" class="modal">
+        <div class="modal-content">
+            <img onclick="closeModal(2)" class="close-menu" src="./res/close.png">
+            <h3 class="title3">An error occured while logging in. Please try again.</h3>
+        </div>
+    </div>
+    <div class="spacer1"></div>
+    <h1 class="title1">Easy Ice Cream Cruise</h1>
+    <h3 class="title3">Lucas Ross, Finn Taylor, Everett Villiger</h3>
+    <div class="container form-container">
+        <form id="login-form" method="POST" action="/submitlogin">
+            <h3 class="title3">Log In</h3>
+            <p id="tip">Don't Have an Account? <a href="/">Sign Up</a></p>
+
+            <div class="spacer1"></div>
+
+            <span id="form-grid">
+
+                <label for="username">Username </label>
+                <input type="text" id="username" name="username" maxlength="16" oninput="validateInput()"required>
+                
+                <label for="password">Password </label>
+                <input type="password" id="password" name="password" required>
+
+            </span>
+
+            <div class="spacer2"></div>
+
+            <button type="submit" class="submit-button" id="submit-button" onclick="getUsername()">Log In</button>
+        </form>
+    </div>
+    <script type="module">
+        //clear all session storage
+        sessionStorage.clear()
+
+        const params = new URLSearchParams(window.location.search);
+        var error = params.get('error')
+
+        if (error == "1"){
+            document.getElementById("error1").style.display = "block"
+        } else if (error == "2"){
+            document.getElementById("error2").style.display = "block"
+        }
+    </script>
+    <script>
+        let username = ""
+
+        /**
+         * makes sure the username is a valid username by removing unnecessary characters
+         */
+        function validateInput() {
+            var inputField = document.getElementById('username')
+            var inputValue = inputField.value
+
+            // removes characters that are not a-z, A-Z, or 0-9
+            // i love regex
+            inputValue = inputValue.replace(/[^a-zA-Z0-9]/g, '')
+
+            inputField.value = inputValue
+        }
+
+        /**
+         * gets the username from the input field and sets it as session storage
+         */
+        function getUsername() {
+            username = document.getElementById("username").value
+            sessionStorage.setItem("username", username)
+        }
+
+        /**
+         * closes a specific modal when the close button is pressed
+         * @param {number} errorCode the error number of the modal to close
+         */
+        function closeModal(errorCode) {
+            document.getElementById("error" + String(errorCode)).style.display = "none"
+        }
+    </script>
+</body>
+</html>

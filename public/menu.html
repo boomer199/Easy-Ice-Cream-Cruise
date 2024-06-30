@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Ice Cream Cruise</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            height: 80vh;
+        }
+        #tempgamebutton {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        #ecvil {
+            text-align: right;
+        }
+
+        .log-out {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 0.5%;
+            text-align: right;
+        }
+
+        .game-selection-choice {
+            width: 25vw;
+            font-size: var(--font-size-3);
+        }
+
+        .game-selection-choice:hover {
+            background-color: var(--dark-orange);
+        }
+
+        .game-selection-unchecked {
+            opacity: 0.7;
+        }
+
+        .game-selection-unchecked:hover {
+            background-color: var(--dark-orange);
+        }
+
+        #game-selection-container {
+            margin: auto;
+            width: 50vw;
+            height: 50vh;
+            justify-content: center;
+        }
+
+        #game-selection-buttons {
+            margin: auto;
+            width: 48vw;
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        .game-selection {
+            margin: auto;
+        }
+
+        #multiplayer-container {
+            display: none;
+            height: 100%;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #multiplayer-container span {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #multiplayer-container span * {
+            margin: 2%;
+            width: 20vw;
+            font-size: var(--font-size-4);
+            text-align: center;
+        }
+
+        #singleplayer-container {
+            margin-top: 2vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            grid-row-gap: 1vw;
+            grid-column-gap: 0.5vh;
+        }
+
+        .track-option {
+            padding: 1%;
+            margin: 1%;
+            width: 12vw;
+            height: 20vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .track-preview {
+            border: 1px solid var(--bg-dark-grey);
+            width: 90%; 
+            height: 90%;
+        }
+
+        .track-desc {
+            text-align: center;
+        }
+
+        #join-code-input {
+            display: inline;
+            padding: 2%;
+            width: 30%;
+            background-color: var(--bg-purewhite);
+            border: 1px solid var(--bg-dark-grey);
+            border-radius: 4px;
+            font-size: var(--font-size-3);
+        }
+
+        /* ------ track modal ------ */
+
+        .track-modal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            padding-top: 3%;
+            padding-left: 4%;
+            padding-right: 2%;
+            padding-bottom: 2%;
+            
+        }
+        
+        .modal-img-div {
+            position: relative;
+            width: 80%;
+            height: 80%;
+        }
+
+        .modal-preview {
+            margin: 0 5% 5% 0;
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--bg-dark-grey);
+        }
+
+        .modal-difficulty { 
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            bottom: 0;
+            left: 0;
+            color: var(--darker-orange);
+            font-size: var(--font-size-3);
+        }
+
+        .track-pb {
+            text-align: center;
+        }
+
+        .play-track-button {
+            width: 15vw;
+            margin: auto;
+        }
+        .play-track-button:hover {
+            text-decoration: none;
+        }
+        .track-leaderboard {
+            font-size: var(--font-size-4);
+        }
+
+        #start-multiplayer-button {
+            display: none;
+            align-self: center;
+            justify-self: center;
+        }
+
+        #join-lobby {
+            display: none;
+            border-top: 1px solid var(--bg-dark-grey);
+            border-left: 1px solid var(--bg-dark-grey);
+            background-color: var(--bg-white);
+            /* this works for any element that you want centered */
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 28vw;
+            height: 50vh;
+            z-index: 99;
+        }
+
+        #join-lobby-list {
+            padding: 2%;
+            display: grid;
+            grid-auto-flow: column;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+        }
+
+        #join-lobby-centered-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body id="body">
+    <!-- modals -->
+    <div id="error1" class="modal">
+        <div class="error-modal-content">
+            <img onclick="closeModal(1)" class="close-menu" src="./res/close.png">
+            <h3 class="title3">Game [<span id="error1-code"></span>] does not exist!</h3>
+        </div>
+    </div>
+    <div id="error2" class="modal">
+        <div class="error-modal-content">
+            <img onclick="closeModal(2)" class="close-menu" src="./res/close.png">
+            <h3 class="title3">Game [<span id="error2-code"></span>] has reached <span id="error2-limit"></span>-player limit.</h3>
+        </div>
+    </div>
+    <div id="track1modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button1" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track1.png" class="modal-preview">
+                <p class="modal-difficulty">★☆☆☆☆</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 1</h3>
+                <ol id="leaderboard-1" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb1">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=1">Play</a>
+        </div>
+    </div>
+    <div id="track2modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button2" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track2.png" class="modal-preview">
+                <p class="modal-difficulty">★☆☆☆☆</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 2</h3>
+                <ol id="leaderboard-2" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb2">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=2">Play</a>
+        </div>
+    </div>
+    <div id="track3modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button3" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track3.png" class="modal-preview">
+                <p class="modal-difficulty">★★☆☆☆</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 3</h3>
+                <ol id="leaderboard-3" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb3">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=3">Play</a>
+        </div>
+    </div>
+    <div id="track4modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button4" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track4.png" class="modal-preview">
+                <p class="modal-difficulty">★★★☆☆</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 4</h3>
+                <ol id="leaderboard-4" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb4">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=4">Play</a>
+        </div>
+    </div>
+    <div id="track5modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button5" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track5.png" class="modal-preview">
+                <p class="modal-difficulty">★★★★☆</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 5</h3>
+                <ol id="leaderboard-5" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb5">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=5">Play</a>
+        </div>
+    </div>
+    <div id="track6modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button6" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track6.png" class="modal-preview">
+                <p class="modal-difficulty">★★★★☆</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 6</h3>
+                <ol id="leaderboard-6" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb6">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=6">Play</a>
+        </div>
+    </div>
+    <div id="track7modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button7" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track7.png" class="modal-preview">
+                <p class="modal-difficulty">★★★★★</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 7</h3>
+                <ol id="leaderboard-7" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb7">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=7">Play</a>
+        </div>
+    </div>
+    <div id="track8modal" class="modal">
+        <div class="modal-content track-modal">
+            <img class="close-menu" id="close-button8" src="./res/close.png">
+            <div class="modal-img-div">
+                <img src="../res/previews/track8.png" class="modal-preview">
+                <p class="modal-difficulty">★★★★★</p>
+            </div>
+            <span>
+                <h3 class="title2 track-title">Track 8</h3>
+                <ol id="leaderboard-8" class="track-leaderboard">
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                    <li><span class="username">--</span><span> --</span></li>
+                </ol>
+            </span>
+            <span class="track-pb title3" id="pb8">--</span>
+            <a class="play-track-button submit-button title3" href="./game?track=8">Play</a>
+        </div>
+    </div>
+    <!-- other tabs -->
+    <div id="join-lobby">
+            <h2 class="title2" id="join-lobby-code"></h2>
+            <h3 class="title3" id="join-lobby-track"></h3>
+            <div id="join-lobby-list">
+            </div>
+            <span id="join-lobby-centered-content">
+                <button class="submit-button" id="start-multiplayer-button">Start Game</button>
+            </span>
+    </div>
+    <div id="chat-container">
+        <span id="chat-log">
+        </span>
+        <span id="chat-inputs">
+            <input type="text" name="chat-new" id="chat-new" maxlength="30">
+            <button id="chat-send" class="submit-button">&rarr;</button>
+        </span>
+    </div>
+    <div class="log-out">
+        <h3 class="title3" id="ecvil">username</h3>
+        <p><a href="login.html">Log Out</a></p>
+    </div>
+
+    <div class="spacer1"></div>
+    <h1 class="title1">Easy Ice Cream Cruise</h1>
+
+    <div id="game-selection-buttons">
+        <button id="singleplayer-button" class="title3 game-selection-choice submit-button">Singleplayer</button>
+        <button id="multiplayer-button" class="title3 game-selection-choice submit-button game-selection-unchecked">Multiplayer</button>
+    </div>
+
+    <div class="container" id="game-selection-container">
+        <div id="singleplayer-container" class="game-selection"> 
+            <div class="track-option" id="track-1">
+                <img src="../res/previews/track1.png" class="track-preview">
+                <p class="track-desc">Track 1</p>
+            </div>
+            <div class="track-option" id="track-2">
+                <img src="../res/previews/track2.png" class="track-preview">
+                <p class="track-desc">Track 2</p>
+            </div>
+            <div class="track-option" id="track-3">
+                <img src="../res/previews/track3.png" class="track-preview">
+                <p class="track-desc">Track 3</p>
+            </div>
+            <div class="track-option" id="track-4">
+                <img src="../res/previews/track4.png" class="track-preview">
+                <p class="track-desc">Track 4</p>
+            </div>
+            <div class="track-option" id="track-5">
+                <img src="../res/previews/track5.png" class="track-preview">
+                <p class="track-desc">Track 5</p>
+            </div>
+            <div class="track-option" id="track-6">
+                <img src="../res/previews/track6.png" class="track-preview">
+                <p class="track-desc">Track 6</p>
+            </div>
+            <div class="track-option" id="track-7">
+                <img src="../res/previews/track7.png" class="track-preview">
+                <p class="track-desc">Track 7</p>
+            </div>
+            <div class="track-option" id="track-8">
+                <img src="../res/previews/track8.png" class="track-preview">
+                <p class="track-desc">Track 8</p>
+            </div>
+        </div>
+
+        <div id="multiplayer-container" class="game-selection">
+          <h3 class="title3" id="host-game-title">Host Online Game</h3>
+          <span id="multiplayer-host">
+              <select name="multiplayer-host-track" id="tracks">
+                  <option value="Track 1">Track 1 </option>
+                  <option value="Track 2">Track 2</option>
+                  <option value="Track 3">Track 3</option>
+                  <option value="Track 4">Track 4</option>
+                  <option value="Track 5">Track 5</option>
+                  <option value="Track 6">Track 6</option>
+                  <option value="Track 7">Track 7</option>
+                  <option value="Track 8">Track 8</option>
+              </select>
+              <button class="submit-button" id="createGame">Create Game</button>
+          </span>
+          <h3 class="title3">Join Online Game</h3>
+          <span id="multiplayer-join">
+              <input type="text" id="multiplayer-join-code" name="multiplayer-join-code" maxlength="5" placeholder="Enter code" required>
+              <button class="submit-button" id="joinGame">Join Game</button>
+          </span>
+      </div>
+    </div> 
+    <script src="javascript/chat.js" type="module"></script>
+
+
+    <script type="module">
+        import {domainName} from "../globalVars.js"
+
+        /**
+         * compares two strings in format "m:ss.ss" for lowest pb
+         * @param {string} user_a first user
+         * @param {string} a first user's time
+         * @param {string} user_b second user
+         * @param {string} b second user's time
+         * @returns [username, pb] with the lowest pb
+         */
+        function getSmallestTime(user_a, a, user_b, b){ 
+            
+            if (a == "--" && b != "--"){
+                return [user_b, b]
+            } else if (a != "--" && b == "--"){
+                return [user_a, a]
+            } else if (a == "--" && b == "--"){
+                return ["--", "--"]
+            }
+
+            let a_min = parseInt(a.slice(0,1))
+            let a_sec = parseFloat(a.slice(2))
+            let b_min = parseInt(b.slice(0,1))
+            let b_sec = parseFloat(b.slice(2))
+
+            if (a_min < b_min || (a_min == b_min && a_sec < b_sec)){
+                return [user_a, a]
+            }
+            return [user_b, b]
+        }
+
+        // womp womp the user tried to hack the system and bypass login :(
+        if(sessionStorage.getItem("username") === null) {
+            // Ensure the redirect URL is correctly formed
+            const redirectUrl = "http://" + domainName + ":3000";
+            
+            // Redirect the user
+            window.location.href = redirectUrl;    
+        } else {
+            let ws = new WebSocket("ws://" + domainName + ":8008")
+            let username = sessionStorage.getItem("username")
+
+            let packet = {
+                method: "load_menu",
+                username: null,
+                info1: null,
+                info2: null
+            }
+
+            ws.onopen = (event) => {
+                ws.send(JSON.stringify(packet))
+            }
+
+            ws.onmessage = message => {
+                message = JSON.parse(message.data)
+
+                if (message.method = "user_read"){
+                    delete message.method //yay!
+                    //get this user's pbs
+                    for (let num = 1; num < 9; num++){
+                        let pb = message[username]["pbs"]["track" + String(num)]
+                        sessionStorage.setItem("track" + String(num) + "pb", pb)
+                        document.getElementById("pb" + String(num)).innerText = pb //html
+                    } 
+
+                    //now get the top 8 scores on each track
+
+                    /**
+                     * shall look as thus
+                     * 
+                     * {
+                     *      "track1": {
+                     *          1: ["finn","0:01.11"],
+                     *          2: ["lucas","0.05.25"],
+                     *          3: ["--","--"],
+                     *          ...
+                     *      },
+                     *      ...
+                     * }
+                     */
+                    let leaderboard = {
+                        "track1": {},
+                        "track2": {},
+                        "track3": {},
+                        "track4": {},
+                        "track5": {},
+                        "track6": {},
+                        "track7": {},
+                        "track8": {}
+                    }
+
+
+                    //first we gotta find the top dawgs
+                    for (let num = 1; num < 9; num++){ //each track
+                        let track = "track" + String(num)
+                        for (let i = 1; i < 9; i++){
+                            //fill the json
+                            leaderboard[track][i] = ["--", "--"]
+                        }
+                        
+
+                        for (let user in message){
+                            let pos = 9 //lowest position to still be on leaderboard
+                            let pb = message[user]["pbs"][track]
+                            let leaderboard_user = leaderboard[track][pos - 1][0]
+                            let leaderboard_pb = leaderboard[track][pos - 1][1]
+                            while (getSmallestTime(user, pb, leaderboard_user, leaderboard_pb)[0] == user && pos > 1){
+                                pos--
+                                if (pos > 1){
+                                    leaderboard_user = leaderboard[track][pos - 1][0]
+                                    leaderboard_pb = leaderboard[track][pos - 1][1]
+                                }
+                            }
+
+                            if (pos <= 8){
+                                //shift everything down
+                                for (let j = 8; j > pos; j--){
+                                    leaderboard[track][j] = leaderboard[track][j - 1]
+                                }
+
+                                //add it in
+                                leaderboard[track][pos] = [user, pb]
+                            }
+                        }    
+                        
+                        //now we have the complete leaderboard for this track! lets put it into the html
+                        let children = document.getElementById("leaderboard-" + String(num)).children
+                        let pos = 1
+                        for (let child of children){
+                            child.children[0].innerText = leaderboard[track][pos][0]
+                            child.children[1].innerText = " " + leaderboard[track][pos][1]
+                            pos += 1
+                        }
+                    }
+
+                    //get their keybinds if they haven't been initialized already
+                    if (sessionStorage.getItem("forwardKey") == null){
+                        sessionStorage.setItem("forwardKey", String(message[username]["keybinds"]["forward"]))
+                        sessionStorage.setItem("backwardKey", String(message[username]["keybinds"]["backward"]))
+                        sessionStorage.setItem("leftKey", String(message[username]["keybinds"]["left"]))
+                        sessionStorage.setItem("rightKey", String(message[username]["keybinds"]["right"]))
+                    }
+                }
+
+                ws.close()
+            }   
+
+        }
+
+        sessionStorage.removeItem("code") //remove it no matter what
+    </script>
+    <script>
+        /**
+         * closes a specific modal when the close button is pressed
+         * @param {number} errorCode the error number of the modal to close
+         */
+        function closeModal(errorCode) {
+            document.getElementById("error" + String(errorCode)).style.display = "none"
+        }
+        document.getElementById("ecvil").innerText = sessionStorage.getItem("username")
+        let sp_content = document.getElementById("singleplayer-container")
+        let mp_content = document.getElementById("multiplayer-container")
+
+        document.getElementById("singleplayer-button").addEventListener("click", function(e){
+            if (sessionStorage.getItem("code") == null){ //only access singleplayer if user hasn't joined game lobby
+                sp_content.style.display = "grid";
+                mp_content.style.display = "none";
+                this.classList.remove("game-selection-unchecked")
+                document.getElementById("multiplayer-button").classList.add("game-selection-unchecked")
+            }
+        })
+        document.getElementById("multiplayer-button").addEventListener("click", function(e){
+            sp_content.style.display = "none";
+            mp_content.style.display = "flex";
+            this.classList.remove("game-selection-unchecked")
+            document.getElementById("singleplayer-button").classList.add("game-selection-unchecked")
+
+        })
+
+        for (let i = 1; i < 9; i++){
+            let num = String(i)
+            //open on preview click
+            document.getElementById("track-" + num).onclick = (e) => {
+                document.getElementById("track" + num + "modal").style.display = "block"
+            }
+
+            //close on close button click
+            document.getElementById("close-button" + num).onclick = (e) => {
+                document.getElementById("track" + num + "modal").style.display = "none"
+            } 
+        }
+    </script>
+</body>
+</html>
